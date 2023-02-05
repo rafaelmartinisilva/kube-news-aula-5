@@ -44,7 +44,7 @@ kind: Deployment
 metadata:
   name: web-kube-nwes
 spec:
-  replicas: 2
+  replicas: 5
   selector:
     matchLabels:
       app: web-kube-nwes
