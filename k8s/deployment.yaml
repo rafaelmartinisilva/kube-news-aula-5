@@ -52,6 +52,10 @@ spec:
     metadata:
       labels:
         app: web-kube-nwes
+      annotations: 
+        promethues.io/scrape: "true"
+        promethues.io/port: "8080"
+        promethues.io/path: /metrics
     spec:
       containers:
         - name: web-kube-nwes
