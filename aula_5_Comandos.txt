@@ -2,7 +2,7 @@
 ### Tópicos das Aulas
 1 Aula - Primeiros passos com Containers
 2 Aula - Criação do Cluster e Deploy da aplicação com Kubernetes
-3 Aula - Aplicação do conceito de IaC (Infrastructure as Code) para criar a infraestrutura na nuvem utilizando o Terraform
+3 Aula - Aplicação do conceito de IaaC (Infrastructure as a Code) para criar a infraestrutura na nuvem utilizando o Terraform
 4 Aula - Automação os processos de Pipeline CI/CD utilizando o Jenkins
 5 Aula - Monitaração das aplicações utilizando o Prometheus e Grafana
 
