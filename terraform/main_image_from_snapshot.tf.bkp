@@ -1,0 +1,12 @@
+# Get the data about a snapshot
+data "digitalocean_image" "jenkins" {
+  name = "jenkins-1675555904487"
+}
+
+# Create a new Web Droplet in the nyc2 region
+resource "digitalocean_droplet" "jenkins" {
+  image  = "${data.digitalocean_image.jenkins.image}"
+  name   = "jenkins"
+  region = var.region
+  size   = "s-2vcpu-2gb"
+}

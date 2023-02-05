@@ -1,0 +1,14 @@
+
+### Tópicos das Aulas
+1 Aula - Primeiros passos com Containers
+2 Aula - Criação do Cluster e Deploy da aplicação com Kubernetes
+3 Aula - Aplicação do conceito de IaC (Infrastructure as Code) para criar a infraestrutura na nuvem utilizando o Terraform
+4 Aula - Automação os processos de Pipeline CI/CD utilizando o Jenkins
+5 Aula - Monitaração das aplicações utilizando o Prometheus e Grafana
+
+
+### Instalação do Prometheus e Grafana
+# 1 Criar pasta nomeada "monitoramento"
+# 2 Criar um manifesto de configuração e instalação utilizando o kubernetes
+# 3 Aplicar as configurações com o kubectl
+kubectl apply -f monitoramento/deploy-prometheus-grafana.yaml

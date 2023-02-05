@@ -1,0 +1,126 @@
+### Entra do diretório dos arquivos do terraform
+cd aula_4/terraform
+
+
+### Inicializa e baixa os plugins necessários
+terraform init
+
+
+### Aplica o terraform e cria a infraestrutura no DigitalOcean
+terraform apply
+
+
+### Obtêm o IP de acesso à máquina virtual para configurar o Jetkins
+jenkins_ip = "178.128.156.31"
+
+
+### Copia o arquivo de configuração do kubernetes gerado pelo terraform para a pasta do kubernetes
+cp kube_config.yaml ~/.kube/config
+
+
+### Test se o kubectl se conectou com o kubernetes da DigitalOcean
+kubectl get nodes
+
+
+
+# ################################################################## #
+# ########## INSTALAÇÃO DOS APLICATIVOS NECESSÁRIOS NA VM ########## #
+# ################################################################## #
+
+# #################### INSTALAÇÃO AUTOMÁTICA #################### #
+
+scp -i ~/.ssh/DigitalOcean_My_Laptop jenkins_config.sh root@178.128.156.31:/root/
+ssh -i ~/.ssh/DigitalOcean_My_Laptop root@178.128.156.31
+chmod a+x jenkins_config.sh
+./jenkins_config.sh
+
+
+# #################### INSTALAÇÃO MANUAL#################### #
+
+### Acessa à máquina virtual do Jetkins para realizar a configuração
+ssh -i ~/.ssh/DigitalOcean_My_Laptop root@178.128.156.31
+
+### Instala o java
+apt update
+apt install openjdk-17-jdk -y
+
+
+### Instala o jenkins
+curl -fsSL https://pkg.jenkins.io/debian-stable/jenkins.io.key | sudo tee \
+  /usr/share/keyrings/jenkins-keyring.asc > /dev/null
+
+echo deb [signed-by=/usr/share/keyrings/jenkins-keyring.asc] \
+  https://pkg.jenkins.io/debian-stable binary/ | sudo tee \
+  /etc/apt/sources.list.d/jenkins.list > /dev/null
+
+sudo apt-get update
+sudo apt-get install jenkins -y
+
+### Instala o docker
+curl -fsSL https://get.docker.com | sh
+usermod -aG docker jenkins
+systemctl restart jenkins
+systemctl status jenkins
+
+
+### Instala o kubernetes
+sudo apt-get update
+sudo apt-get install -y ca-certificates curl
+sudo apt-get install -y apt-transport-https
+sudo curl -fsSLo /etc/apt/keyrings/kubernetes-archive-keyring.gpg https://packages.cloud.google.com/apt/doc/apt-key.gpg
+echo "deb [signed-by=/etc/apt/keyrings/kubernetes-archive-keyring.gpg] https://apt.kubernetes.io/ kubernetes-xenial main" | sudo tee /etc/apt/sources.list.d/kubernetes.list
+sudo apt-get update
+sudo apt-get install -y kubectl
+
+
+# ################################################################# #
+# #################### CONFIGURAÇÃO DO JENKINS #################### #
+# ################################################################# #
+
+### Abrir o jenkins no browser para configurá-lo e instalar os plugins necessários
+
+# Utilizar o ip obtido ao executar o terraform apply
+178.128.156.31:8080
+
+* 1 - Configurar as credenciais de acesso
+* 2 - Instalar plugins necessários
+** 1 - Gerenciar Jenkins -> Gerenciar Extensões -> Extensões Dispníveis
+*** 1 - Docker
+*** 2 - Docker Pipeline
+*** 3 - Kubernetes CLI
+
+### Criar a Pipeline no Jenkins WEB
+* Nova Tarefa -> Pipeline -> realizar configurações 
+* Configuration -> Pipeline -> Definition -> Pipeline script from SCM
+* Configuration -> Pipeline -> Definition -> SCM -> Git
+* Configuration -> Pipeline -> Definition -> SCM -> Repositories -> Repository URL -> https://github.com/rafaelmartinisilva/kube-news.git
+* Configuration -> Pipeline -> Definition -> SCM -> Branches to build -> */main
+* Configuration -> Pipeline -> Definition -> Script Path -> Jenkinsfile
+
+
+# ############### CI/CD ############### #
+
+### Cria o arquivo Jenkins no projeto
+
+
+# ############### CI - Continuous integration ############### #
+
+### Cria um step para realizar o Build da imagem do docker
+
+### Cria um step para push da imagem do docker
+* Neste ponto é necessário configurar a senha de acesso ao docker hub
+** Paine de controle -> Gerenciar Jenkins -> Manage Credentials -> System -> Global credentials -> Kink -> Username with password
+
+
+# ############### CD - Continuous Delivery ############### #
+
+### Criar um step para deploy da aplicação no Kubernetes
+* Neste ponto também é necessário a configuração de uma credencial
+** Paine de controle -> Gerenciar Jenkins -> Manage Credentials -> System -> Global credentials -> Kink -> Secret file
+*** adicionar o arquivo de configuraçaõ do kubernetes ("kube_config.yaml", no meu caso, que será gerado pelo terraform) 
+**** OBS.: Lembrar de não adicionar o arquivo de configuração do kubernetes ao git, pois gera erro de chave de acesso ao DigitalOcean
+
+# ############### Contruir automaticamente a Pipeline ############### #
+1 - Navegue até o projeto "kube-news" -> Configurar -> Build Triggers -> GitHub hook trigger for GITScm polling -> salvar
+2 - Copie o endereço do Jenkins (http://178.128.156.31:8080/)
+3 - Vá até o projeto do GitHub (kube-news-aula-5) -> Settings -> Webhooks -> Payload URL -> http://178.128.156.31:8080/github-webhook/
